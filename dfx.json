@@ -1,0 +1,27 @@
+{
+  "canisters": {
+    "test_ireits_backend": {
+      "candid": "src/test_ireits_backend/test_ireits_backend.did",
+      "package": "test_ireits_backend",
+      "type": "rust"
+    },
+    "test_ireits_frontend": {
+      "dependencies": [
+        "test_ireits_backend"
+      ],
+      "source": [
+        "src/test_ireits_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "test_ireits_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
