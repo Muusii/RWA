@@ -1,4 +1,8 @@
-# `test_ireits`
+# `IREITs TOKENIZATION `
+- [Frontend](https://qiriz-wyaaa-aaaak-qloaq-cai.icp0.io/)
+- [Backend](https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=qpqon-3aaaa-aaaak-qloaa-cai)
+
+
 
 Welcome to your new `test_ireits` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
 
