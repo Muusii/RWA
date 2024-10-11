@@ -27,8 +27,8 @@ const Footer: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-poultry-orange mb-4">Resources</h2>
           <ul className="space-y-2">
-            <li><a href="https://www.agriculture.go.ug/wp-content/uploads/2020/07/MAAIF-Poultry-Manual.pdf" className="hover:text-poultry-pink transition-colors">Poultry Manual</a></li> 
-            <li><a href="https://www.roysfarm.com/poultry-farming-faq/" className="hover:text-poultry-pink transition-colors">FAQs</a></li>
+            <li><a href="https://chain.link/education-hub/real-world-assets-rwas-explained" className="hover:text-poultry-pink transition-colors">Poultry Manual</a></li> 
+            <li><a href="https://chain.link/use-cases/asset-tokenization" className="hover:text-poultry-pink transition-colors">Ask Expert</a></li>
           </ul>
         </div>
         <div>
