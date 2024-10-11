@@ -107,11 +107,11 @@ const HeroSection = () => {
 
      {/* 3D Cards Section */}
      <div className="mt-10">
-        <h2 className="text-3xl font-bold text-center text-poultry-orange">Poultry Management System Components</h2>
+        <h2 className="text-3xl font-bold text-center text-poultry-orange">About IREITs Platform</h2>
         <CardContainer containerClassName="mt-10">
            <CardBody>
             <CardItem translateX={20} translateY={20} translateZ={50} rotateX={20} rotateY={20} rotateZ={0}>
-              <h3 className="text-xl font-bold text-poultry-orange">Structures</h3>
+              <h3 className="text-xl font-bold text-poultry-orange">Features</h3>
               <ul className="text-white mt-2">
                 <ol>PoultryRecord: This structure holds general information about poultry, including createdAt, typeOfPoultry, age_weeks, feedType, vaccination_weeks, and nfcTagId.</ol>
                 <ol>Broiler: This structure is specific to broilers and includes fields like id, age_weeks, numberOfBroilers, breed, createdAt, available, and sold.</ol>

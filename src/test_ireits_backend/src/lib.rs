@@ -290,6 +290,102 @@
          Ok(token)
      }
      
+     // Function to buy a token (assign ownership to a new public key)
+     #[ic_cdk::update]
+fn buy_token(token_id: u64, buyer_public_key: Vec<u8>) -> Result<Token, Error> {
+    // Fetch the token by ID
+    let mut token = get_token_by_id(token_id)?;
+
+    // Check if the token is already owned by someone else
+    if !token.owner_public_key.is_empty() && token.owner_public_key != buyer_public_key {
+        return Err(Error::Unauthorized {
+            msg: format!("Token with ID = {} is already owned", token_id),
+        });
+    }
+
+    // Update the token's owner to the buyer's public key
+    token.owner_public_key = buyer_public_key;
+
+
+    // Update token in storage
+    TOKEN_STORAGE.with(|m| m.borrow_mut().insert(token_id, token.clone()));
+
+    Ok(token)
+}
+
+#[ic_cdk::update]
+fn distribute_dividends(property_id: u64, total_profit: f64) -> Result<(), Error> {
+    let property_tokens = TOKEN_STORAGE.with(|m| {
+        m.borrow()
+            .iter()
+            .filter(|(_, token)| token.property_id == property_id)
+            .map(|(_, token)| token.clone())
+            .collect::<Vec<_>>()
+    });
+
+    if property_tokens.is_empty() {
+        return Err(Error::NotFound {
+            msg: format!("No tokens found for property ID = {}", property_id),
+        });
+    }
+
+    let dividend_per_token = total_profit * 0.85 / property_tokens.len() as f64; // 85% of the profit distributed
+
+    // Simulate dividend distribution
+    for token in property_tokens {
+        // Normally, you'd integrate a payment system here
+        ic_cdk::println!(
+            "Distributing ${} to token ID {} for property {}",
+            dividend_per_token,
+            token.token_id,
+            property_id
+        );
+    }
+
+    Ok(())
+}
+
+#[ic_cdk::query]
+fn get_tokens_by_owner(owner_public_key: Vec<u8>) -> Result<Vec<Token>, Error> {
+    let owned_tokens = TOKEN_STORAGE.with(|m| {
+        m.borrow()
+            .iter()
+            .filter(|(_, token)| token.owner_public_key == owner_public_key)
+            .map(|(_, token)| token.clone())
+            .collect::<Vec<_>>()
+    });
+
+    if owned_tokens.is_empty() {
+        return Err(Error::NotFound {
+            msg: format!("No tokens found for owner"),
+        });
+    }
+
+    Ok(owned_tokens)
+}
+
+
+// Function to sell a token (remove ownership from the current owner)
+#[ic_cdk::update]
+fn sell_token(token_id: u64, seller_public_key: Vec<u8>) -> Result<Token, Error> {
+    // Fetch the token by ID
+    let mut token = get_token_by_id(token_id)?;
+
+    // Ensure that the seller owns the token
+    if token.owner_public_key != seller_public_key {
+        return Err(Error::Unauthorized {
+            msg: format!("Token with ID = {} is not owned by the seller", token_id),
+        });
+    }
+
+    // Remove ownership (set public key to empty)
+    token.owner_public_key = Vec::new();
+
+    // Update the token in the storage
+    TOKEN_STORAGE.with(|m| m.borrow_mut().insert(token_id, token.clone()));
+
+    Ok(token)
+}
      // Function to retrieve token by token ID
      #[ic_cdk::query]
      fn get_token_by_id(token_id: u64) -> Result<Token, Error> {

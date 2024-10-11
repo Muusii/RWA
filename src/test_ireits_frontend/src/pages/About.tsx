@@ -1,136 +1,58 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import Logo from "../assets/REIT1.jpg";
-import Particles from "react-tsparticles";
-import type { ISourceOptions } from "tsparticles-engine";
-import { CardContainer, CardBody, CardItem } from '../components/ui/3d-card'; 
+import React from "react";
+import { TracingBeam } from "../components/ui/tracing-beam";
+import { LampContainer } from "../components/ui/lampDemo";
+
+const AboutPages = [
+  {
+    title: "About PropVest Platform",
+    description:
+      "The PropVest Platform is a decentralized, blockchain-based solution aimed at transforming the real estate investment landscape.",
+    points: [
+      "The IREITs Platform is a decentralized, blockchain-based solution aimed at transforming the real estate investment landscape.",
+    ],
+  },
+  {
+    title: "Key Features:",
+    description:
+      "Built on the Internet Computer Protocol (ICP), our platform ensures every transaction is securely recorded on-chain, guaranteeing transparency and immutability of data.",
+    points: [
+      "Fractional Ownership: We democratize real estate by breaking down large, income-generating properties",
+    ],
+  
+  },
+  {
+    title: "Why Choose Us?",
+    description:
+      "Low Minimum Investment: You don’t need to be a millionaire to invest in real estate. With our platform, you can start small and grow your portfolio.",
+    points: [
+      "Secure Transactions: Powered by smart contracts, our platform ensures that every property transaction and dividend distribution is handled securely without manual interference.  Liquidity and Flexibility: Unlike traditional real estate, you can easily trade your fractional ownership tokens on the open market, offering greater liquidity and flexibility.",
+    ],
+  },
+];
 
 const AboutPage = () => {
-  const particlesOptions: ISourceOptions = {
-    background: {
-      color: {
-        value: "#4B0082",
-      },
-    },
-    fpsLimit: 60,
-    interactivity: {
-      detectsOn: "canvas",
-      events: {
-        onClick: {
-          enable: true,
-          mode: "push",
-        },
-        onHover: {
-          enable: true,
-          mode: "repulse",
-        },
-        resize: true,
-      },
-      modes: {
-        bubble: {
-          distance: 400,
-          duration: 2,
-          opacity: 0.8,
-          size: 40,
-        },
-        push: {
-          quantity: 4,
-        },
-        repulse: {
-          distance: 200,
-        },
-      },
-    },
-    particles: {
-      color: {
-        value: "#FFA500",
-      },
-      links: {
-        color: "#FFFAFA",
-        distance: 150,
-        enable: true,
-        opacity: 0.4,
-        width: 1,
-      },
-      collisions: {
-        enable: true,
-      },
-      move: {
-        direction: "none",
-        enable: true,
-        outMode: "bounce",
-        random: false,
-        speed: 6,
-        straight: false,
-      },
-      number: {
-        density: {
-          enable: true,
-          area: 800,
-        },
-        value: 80,
-      },
-      opacity: {
-        value: 0.5,
-      },
-      shape: {
-        type: "circle",
-      },
-      size: {
-        random: true,
-        value: 5,
-      },
-    },
-    detectRetina: true,
-  };
-
   return (
-    <div className="bg-poultry-dark text-white p-4 relative overflow-hidden"> 
-      {/* s */}
-
-     {/* 3D Cards Section */}
-     <div className="mt-10">
-        <h2 className="text-3xl font-bold text-center text-poultry-orange">Poultry Management System Components</h2>
-        <CardContainer containerClassName="mt-10">
-           <CardBody>
-            <CardItem translateX={20} translateY={20} translateZ={50} rotateX={20} rotateY={20} rotateZ={0}>
-              <h3 className="text-xl font-bold text-poultry-orange">Structures</h3>
-              <ul className="text-white mt-2">
-                <ol>PoultryRecord: This structure holds general information about poultry, including createdAt, typeOfPoultry, age_weeks, feedType, vaccination_weeks, and nfcTagId.</ol>
-                <ol>Broiler: This structure is specific to broilers and includes fields like id, age_weeks, numberOfBroilers, breed, createdAt, available, and sold.</ol>
-                <ol>Layer: This structure is specific to layers and includes fields like id, age_weeks, numberOfLayers, breed, createdAt, available, and sold.</ol>
-                <ol>Egg: This structure holds information about eggs, including id, breed, createdAt, available, sold, laidEggs, and damagedEggs.</ol>
+    <div className="py-4 px-4 sm:px-6 lg:px-8 bg-poultry-dark text-white">
+      <h2 className="text-3xl font-bold text-center text-poultry-pink mb-2">
+        About IREIT TOKENIZATION.
+      </h2>
+      <TracingBeam className="mb-1">
+        {AboutPages.map((feature, index) => (
+          <LampContainer key={index} className="mb-2">
+            <div className="p-2 bg-poultry-dark border border-white rounded-lg shadow-lg">
+              <h3 className="text-xl font-bold text-purple-orange mb-1">
+                {feature.title}
+              </h3>
+              <p className="text-white mb-2">{feature.description}</p>
+              <ul className="text-white list-disc list-inside">
+                {feature.points.map((point, idx) => (
+                  <li key={idx}>{point}</li>
+                ))}
               </ul>
-            </CardItem>
-          </CardBody>
-          <CardBody>
-            <CardItem translateX={10} translateY={10} translateZ={30} rotateX={10} rotateY={10} rotateZ={0}>
-              <h3 className="text-xl font-bold text-poultry-orange">Databases</h3>
-              <ul className="text-white mt-2">
-                <ol>PoultryRecords: A StableBTreeMap that stores general poultry records, making it possible to retrieve and update poultry information efficiently.</ol>
-                <ol>Broilers: A StableBTreeMap that stores broiler records, managing data related to broiler chickens.</ol>
-                <ol>Layers: A StableBTreeMap that stores layer records, managing data related to layer chickens.</ol>
-                <ol>Eggs: A StableBTreeMap that stores egg records, managing data related to egg production and sales.</ol>
-              </ul>
-            </CardItem>
-          </CardBody>
-          <CardBody>
-            <CardItem translateX={10} translateY={10} translateZ={30} rotateX={10} rotateY={10} rotateZ={0}>
-              <h3 className="text-xl font-bold text-poultry-orange border-poultry-orange">CRUD Functions</h3>
-              <ul className="text-white mt-2">
-                <ol>createPoultryRecord: Creates a new poultry record with specified details.</ol>
-                <ol>createBroilers: Creates new broiler records.</ol>
-                <ol>enterSoldBroilers: Updates broiler records to reflect sales.</ol>
-                <ol>getAllBroilers: Retrieves all broiler records.</ol>
-                <ol>enterLaidEggs: Adds laid eggs to the records.</ol>
-                <ol>enterSoldEggs: Updates records with sold eggs.</ol>
-                <ol>enterDamagedEggs: Updates records with damaged eggs.</ol>
-                <ol>getAllEggs: Retrieves all egg records.</ol>
-              </ul>
-            </CardItem>
-          </CardBody>
-        </CardContainer>
-      </div>
+            </div>
+          </LampContainer>
+        ))}
+      </TracingBeam>
     </div>
   );
 };

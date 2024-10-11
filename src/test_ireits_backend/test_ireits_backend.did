@@ -46,4 +46,6 @@ service : {
   mint_token : (nat64) -> (TokenResult);
   get_token_by_id : (nat64) -> (TokenResult) query;
   transfer_token_ownership : (nat64, vec nat8) -> (TokenResult);
+  buy_token : (nat64, vec nat8) -> (TokenResult);
+  sell_token : (nat64, vec nat8) -> (TokenResult);
 }
