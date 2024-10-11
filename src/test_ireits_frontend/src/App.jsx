@@ -10,7 +10,7 @@ import Navbar from './components/Navabar';
 import HomePage from './pages/Homepage';
 import FeaturePage from './pages/Feature';
 import AboutPage from './pages/About';
-import PropertyPage from './pages/Property';
+import LoginPage from './pages/Login';
 import Footer from './components/Footer';
 
 
@@ -73,11 +73,7 @@ function App() {
     await authClient.logout();
     setLoggedIn(false);
   };
-
-  return (
-    <main>
-      <br />
-      <br />
+  <br />
       {loggedIn ? (
         <div>
           <button onClick={logout}>Logout</button>
@@ -87,15 +83,20 @@ function App() {
         <button onClick={createNFID}>Login</button>
       )}
 
+  return (
+    <main>
+      <br />
+      
+
       <div>
       <Router>
-       <Navbar />
+      <Navbar loggedIn={loggedIn} onLogin={createNFID} onLogout={logout} className="hover:text-pink-500 transition-colors" />
       
        <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/features" element={<FeaturePage />} />
-        <Route path="/property" element={<PropertyPage />} />
+        <Route path='/login'elemen={<LoginPage />} />
         
        </Routes>
        <Footer />
