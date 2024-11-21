@@ -1,73 +1,64 @@
-import React from "react";
-import './Feature.css';
-import REIT3 from '../assets/REIT1.jpg';
-import { TracingBeam } from "../components/ui/tracing-beam";
-import { LampContainer } from "../components/ui/lampDemo";
+import React from 'react';
 
-// Define the structure of each feature
-interface Feature {
-  title: string;
-  description: string;
-  points: string[];
-}
+export default function FeaturePage() {
+  const properties = [
+    {
+      title: 'Modern Apartment',
+      location: 'Downtown Nakuru',
+      price: '250,000 PT',
+      beds: 2,
+      baths: 2,
+      area: '1000 sqft',
+      image: '/placeholder.svg?height=200&width=300',
+      status: 'For Sale',
+    },
+    {
+      title: 'Suburban House',
+      location: 'Kilimani, Nairobi',
+      price: '450,000 PT',
+      beds: 4,
+      baths: 3,
+      area: '2500 sqft',
+      image: '/placeholder.svg?height=200&width=300',
+      status: 'For Sale',
+    },
+    {
+      title: 'Villa',
+      location: 'Nyali, Mombasa',
+      price: '800,000 PT',
+      beds: 5,
+      baths: 2,
+      area: 'Greenwood Drive, Nyali Area sqft',
+      image: '/placeholder.svg?height=200&width=300',
+      status: 'For Lease',
+    },
+  ];
 
-// Define the array of features
-const FeaturePages: Feature[] = [
-  {
-    title: "WorkSpace property",
-    description:
-      "This workspace is located in Nairobi, Westlands and was built in 2016",
-    points: [
-      "All rooms here are tokenized",
-    ],
-  },
-//   {
-//     title: "Key Features:",
-//     description:
-//       "Built on the Internet Computer Protocol (ICP), our platform ensures every transaction is securely recorded on-chain, guaranteeing transparency and immutability of data.",
-//     points: [
-//       "Fractional Ownership: We democratize real estate by breaking down large, income-generating properties",
-//     ],
-//   },
-//   {
-//     title: "Why Choose Us?",
-//     description:
-//       "Low Minimum Investment: You don’t need to be a millionaire to invest in real estate. With our platform, you can start small and grow your portfolio.",
-//     points: [
-//       "Secure Transactions: Powered by smart contracts, our platform ensures that every property transaction and dividend distribution is handled securely without manual interference. Liquidity and Flexibility: Unlike traditional real estate, you can easily trade your fractional ownership tokens on the open market, offering greater liquidity and flexibility.",
-//     ],
-//   },
-];
-
-const FeaturePage: React.FC = () => {
   return (
-    <div className="py-4 px-4 sm:px-6 lg:px-8 bg-poultry-dark text-white">
-      <h2 className="text-3xl font-bold text-center text-poultry-pink mb-2">
-        Properties listed on our platform.
-      </h2>
-      <TracingBeam className="mb-1">
-        {FeaturePages.map((feature, index) => (
-          <LampContainer key={index} className="mb-2">
-            <div className="p-4 bg-poultry-dark border border-white rounded-lg shadow-lg">
-              <h3 className="text-xl font-bold text-purple-orange mb-1">
-                {feature.title}
-              </h3>
-              {/* Render the image for the first feature */}
-              {index === 0 && (
-                <img src={REIT3} alt="Workspace" className="w-min h-auto mb-4" />
-              )}
-              <p className="text-white mb-2">{feature.description}</p>
-              <ul className="text-white list-disc list-inside">
-                {feature.points.map((point, idx) => (
-                  <li key={idx}>{point}</li>
-                ))}
-              </ul>
+    <div className="p-6 bg-gray-50">
+      <h2 className="mb-6 text-3xl font-bold text-center text-gray-900">Featured Listings</h2>
+      <div className="grid gap-6 md:grid-cols-3">
+        {properties.map((property, index) => (
+          <div key={index} className="overflow-hidden bg-white rounded-lg shadow">
+            <div className="relative">
+              <img src={property.image} alt={property.title} className="w-full h-48 object-cover" />
+              <span className="absolute top-2 left-2 px-2 py-1 text-sm font-semibold text-white bg-black bg-opacity-50 rounded">
+                {property.status}
+              </span>
             </div>
-          </LampContainer>
+            <div className="p-4">
+              <h3 className="text-xl font-semibold text-gray-900">{property.title}</h3>
+              <p className="text-gray-600">{property.location}</p>
+              <p className="mt-2 text-lg font-bold text-gray-900">{property.price}</p>
+              <div className="flex items-center mt-4 text-gray-600">
+                <span className="mr-4">{property.beds} Beds</span>
+                <span className="mr-4">{property.baths} Baths</span>
+                <span>{property.area}</span>
+              </div>
+            </div>
+          </div>
         ))}
-      </TracingBeam>
+      </div>
     </div>
   );
-};
-
-export default FeaturePage;
+}

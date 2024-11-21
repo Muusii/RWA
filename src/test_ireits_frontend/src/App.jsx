@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { AuthClient } from '@dfinity/auth-client';
 import { HttpAgent } from '@dfinity/agent';
 import { createActor } from '../declarations/test_ireits_backend';
-import BuyToken from "./components/buy-token";
+// import BuyToken from "./components/buy-token";
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -12,6 +12,7 @@ import FeaturePage from './pages/Feature';
 import AboutPage from './pages/About';
 import LoginPage from './pages/Login';
 import Footer from './components/Footer';
+import DashboardPage from './pages/Dashboard';
 
 
 function App() {
@@ -97,15 +98,13 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/features" element={<FeaturePage />} />
         <Route path='/login'elemen={<LoginPage />} />
+        <Route path='/dashboard' element={<DashboardPage/>} />
         
        </Routes>
        <Footer />
       </Router>
 
-      <div className="app-container">
-       <h1>Welcome to the Token Marketplace</h1>
-       <BuyToken /> {/* Render Buy Token component */}
-      </div>
+     
       </div>
     </main>
   );
