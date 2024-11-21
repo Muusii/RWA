@@ -1,51 +1,58 @@
-type Error = variant {
-  Validate : record { msg : text };
-  NotFound : record { msg : text };
-  Unauthorized : record { msg : text };
+type DocumentType = variant {
+    Deed;
+    Title;
+    Contract;
+    Inspection;
+    Other;
+};
+
+type PropertyStatus = variant {
+    Available;
+    UnderContract;
+    Sold;
+};
+
+type TransactionStatus = variant {
+    Pending;
+    Completed;
+    Cancelled;
+};
+
+type Document = record {
+    id: nat64;
+    doc_type: DocumentType;
+    hash: text;
+    timestamp: nat64;
 };
 
 type Property = record {
-  id : nat64;
-  address : text;
-  year_build : float64;
-  lot_size : float64;
-  price : float64;
-  description : text;
-  no_of_rooms : float64;
-  owner_public_key : vec nat8;
+    id: nat64;
+    owner: principal;
+    price: float64;
+    location: text;
+    description: text;
+    status: PropertyStatus;
+    nft_id: opt text;
+    documents: vec Document;
 };
 
-type PropertyPayload = record {
-  address : text;
-  year_build : float64;
-  lot_size : float64;
-  price : float64;
-  description : text;
-  no_of_rooms : float64;
-  owner_public_key : vec nat8;
+type Transaction = record {
+    id: nat64;
+    property_id: nat64;
+    seller: principal;
+    buyer: principal;
+    price: float64;
+    status: TransactionStatus;
+    timestamp: nat64;
 };
-
-type Token = record {
-  token_id : nat64;
-  property_id : nat64;
-  owner_public_key : vec nat8;
-  token_metadata : text;
-};
-
-type Result = variant { Ok : Property; Err : Error };
-type ResultList = variant { Ok : vec Property; Err : Error };
-type TokenResult = variant { Ok : Token; Err : Error };
-type TokenListResult = variant { Ok : vec Token; Err : Error };
 
 service : {
-  add_property : (PropertyPayload) -> (Result);
-  delete_property : (nat64) -> (Result);
-  get_properties : () -> (ResultList) query;
-  get_property_by_id : (nat64) -> (Result) query;
-  update_property : (nat64, PropertyPayload) -> (Result);
-  mint_token : (nat64) -> (TokenResult);
-  get_token_by_id : (nat64) -> (TokenResult) query;
-  transfer_token_ownership : (nat64, vec nat8) -> (TokenResult);
-  buy_token : (nat64, vec nat8) -> (TokenResult);
-  sell_token : (nat64, vec nat8) -> (TokenResult);
+    list_property: (price: float64, location: text, description: text) -> (Property);
+    get_property: (property_id: nat64) -> (opt Property) query;
+    get_all_properties: () -> (vec Property) query;
+    get_user_properties: (user: principal) -> (vec Property) query;
+    initiate_transaction: (property_id: nat64) -> (nat64);
+    complete_transaction: (transaction_id: nat64) -> (bool);
+    get_transaction: (transaction_id: nat64) -> (opt Transaction) query;
+    add_document: (property_id: nat64, doc_type: DocumentType, hash: text) -> (bool);
 }

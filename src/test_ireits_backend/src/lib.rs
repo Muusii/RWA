@@ -1,416 +1,244 @@
-/**
-     *
-     *  ██████╗ ███████╗ █████╗ ██╗         ███████╗███████╗████████╗ █████╗ ████████╗███████╗    ████████╗ ██████╗ ██╗  ██╗███████╗███╗   ██╗
-     *  ██╔══██╗██╔════╝██╔══██╗██║         ██╔════╝██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝    ╚══██╔══╝██╔═══██╗██║ ██╔╝██╔════╝████╗  ██║
-     *  ██████╔╝█████╗  ███████║██║         █████╗  ███████╗   ██║   ███████║   ██║   █████╗         ██║   ██║   ██║█████╔╝ █████╗  ██╔██╗ ██║
-     *  ██╔══██╗██╔══╝  ██╔══██║██║         ██╔══╝  ╚════██║   ██║   ██╔══██║   ██║   ██╔══╝         ██║   ██║   ██║██╔═██╗ ██╔══╝  ██║╚██╗██║
-     *  ██║  ██║███████╗██║  ██║███████╗    ███████╗███████║   ██║   ██║  ██║   ██║   ███████╗       ██║   ╚██████╔╝██║  ██╗███████╗██║ ╚████║
-     *  ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝    ╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚══════╝       ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝
-     *
-     */
+use candid::{CandidType, Deserialize, Principal};
+use ic_cdk::api::caller as ic_caller;
+use ic_cdk::{query, update};
+use serde::Serialize;
+use std::cell::RefCell;
+use std::collections::HashMap;
 
-     #[macro_use]
-     extern crate serde;
-     use candid::{Decode, Encode};
-     use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
-     use ic_stable_structures::{BoundedStorable, Cell, DefaultMemoryImpl, StableBTreeMap, Storable};
-     use std::{borrow::Cow, cell::RefCell};
-     
-     type Memory = VirtualMemory<DefaultMemoryImpl>;
-     type IdCell = Cell<u64, Memory>;
-     
-     // struct for property
-     #[derive(candid::CandidType, Clone, Serialize, Deserialize)]
-     struct Property {
-         id: u64,
-         address: String,
-         year_build: f64,
-         lot_size: f64,
-         price: f64,
-         description: String,
-         no_of_rooms: f64,
-         owner_public_key: Vec<u8>, // Public key of the current owner
-     }
-     // Implement storable and boundedstorable traits of property
-     impl Storable for Property {
-         fn to_bytes(&self) -> Cow<[u8]> {
-             Cow::Owned(Encode!(self).unwrap())
-         }
-     
-         fn from_bytes(bytes: Cow<[u8]>) -> Self {
-             Decode!(bytes.as_ref(), Self).unwrap()
-         }
-     }
-     
-     impl BoundedStorable for Property {
-         const MAX_SIZE: u32 = 1024;
-         const IS_FIXED_SIZE: bool = false;
-     }
-     
-     thread_local! {
-         static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> = RefCell::new(
-             MemoryManager::init(DefaultMemoryImpl::default())
-         );
-     
-         static PROPERTY_ID: RefCell<IdCell> = RefCell::new(
-             IdCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0))), 0)
-                 .expect("Cannot create a counter")
-         );
-     
-         static PROPERTY_STORAGE: RefCell<StableBTreeMap<u64, Property, Memory>> = RefCell::new(
-             StableBTreeMap::init(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1))))
-         );
-     }
-     
-     // Property payload
-     #[derive(candid::CandidType, Serialize, Deserialize)]
-     struct PropertyPayload {
-         address: String,
-         year_build: f64,
-         lot_size: f64,
-         price: f64,
-         description: String,
-         no_of_rooms: f64,
-         owner_public_key: Vec<u8>, // Public key of the current owner
-     }
-     
-     // Function to verify the owner's identity
-     fn verify_owner_identity(_payload: &PropertyPayload) -> bool {
-         // For demo all public keys are valid
-         true
-     }
-     
-     // Function to get existing properties
-     #[ic_cdk::query]
-     fn get_properties() -> Result<Vec<Property>, Error> {
-         let properties = PROPERTY_STORAGE.with(|m| {
-             m.borrow()
-                 .iter()
-                 .map(|(_, v)| v.clone())
-                 .collect::<Vec<_>>()
-         });
-         if properties.len() == 0 {
-             return Err(Error::NotFound {
-                 msg: "No properties found".to_string(),
-             });
-         }
-         Ok(properties)
-     }
-     
-     //Function to get property by ID
-     #[ic_cdk::query]
-     fn get_property_by_id(id: u64) -> Result<Property, Error> {
-         PROPERTY_STORAGE.with(|service| {
-             service.borrow_mut().get(&id).ok_or(Error::NotFound {
-                 msg: format!("Property with ID = {} not found", id),
-             })
-         })
-     }
-     
-     //Function to add new property
-     #[ic_cdk::update]
-     fn add_property(payload: PropertyPayload) -> Result<Property, Error> {
-         //Simple validation to ensure no fields are left empty
-         if payload.owner_public_key.is_empty()
-             || payload.address.is_empty()
-             || payload.year_build.is_nan()
-             || payload.lot_size.is_nan()
-             || payload.description.is_empty()
-             || payload.no_of_rooms.is_nan()
-             || payload.price.is_nan()
-         {
-             return Err(Error::Validate {
-                 msg: "Please fill in all the required fields".to_string(),
-             });
-         }
-     
-         // Verify owner before adding new property
-         if !verify_owner_identity(&payload) {
-             return Err(Error::Unauthorized {
-                 msg: "Invalid owner identity".to_string(),
-             });
-         }
-     
-         let id = PROPERTY_ID
-             .with(|counter| {
-                 let current_value = *counter.borrow().get();
-                 counter.borrow_mut().set(current_value + 1)
-             })
-             .expect("Cannot increment id counter");
-     
-         let property = Property {
-             id,
-             address: payload.address,
-             year_build: payload.year_build,
-             lot_size: payload.lot_size,
-             price: payload.price,
-             description: payload.description,
-             no_of_rooms: payload.no_of_rooms,
-             owner_public_key: payload.owner_public_key,
-         };
-     
-         PROPERTY_STORAGE.with(|m| m.borrow_mut().insert(id, property.clone()));
-         Ok(property)
-     }
-     
-     //Function to update any property info
-     #[ic_cdk::update]
-     fn update_property(id: u64, payload: PropertyPayload) -> Result<Property, Error> {
-         //Simple validation to ensure no fields are left
-         if payload.address.is_empty() & payload.year_build.is_nan() & payload.lot_size.is_nan() & payload.price.is_nan() & payload.description.is_empty() & payload.no_of_rooms.is_nan() {
-             return Err(Error::Validate {
-                 msg: "You cannot leave all fields empty".to_string(),
-             });
-         }
-     
-         PROPERTY_STORAGE.with(|m| {
-             let mut property = m.borrow_mut().get(&id).ok_or(Error::NotFound {
-                 msg: format!("Property with id = {} not found ", id),
-             })?;
-     
-             // Verify owner before updating property info
-             if !verify_owner_identity(&payload) {
-                 return Err(Error::Unauthorized {
-                     msg: "Invalid owner identity".to_string(),
-                 });
-             }
-     
-             property.address = payload.address;
-             property.year_build = payload.year_build;
-             property.lot_size = payload.lot_size;
-             property.price = payload.price;
-             property.no_of_rooms = payload.no_of_rooms;
-             property.description = payload.description;
-     
-             m.borrow_mut().insert(id, property.clone());
-             Ok(property)
-         })
-     }
-     
-     // Function to delete the property from website when bought
-     #[ic_cdk::update]
-     fn delete_property(id: u64) -> Result<Property, Error> {
-         PROPERTY_STORAGE.with(|m| {
-             m.borrow_mut().remove(&id).ok_or(Error::NotFound {
-                 msg: format!("Property with id = {} not found", id),
-             })
-         })
-     }
-     
-     // // Function to transfer ownership after transactions
-     // #[ic_cdk::update]
-     // fn transfer_property_ownership(id: u64, new_owner: Vec<u8>) -> Result<Property, Error> {
-     //     PROPERTY_STORAGE.with(|m| {
-     //         let mut property = m.borrow_mut().get(&id).ok_or(Error::NotFound{ 
-     //             msg: format!("Property with id = {} not found", id)
-     //         })?;
-     
-     //         property.owner_public_key = new_owner;
-     
-     //         m.borrow_mut().insert(id, property.clone());
-     //         Ok(property)
-     //     })
-     // }
-     
-     #[derive(candid::CandidType, Deserialize, Serialize, Debug)]
-     enum Error {
-         Validate { msg: String },
-         NotFound { msg: String },
-         Unauthorized { msg: String },
-     }
-     
-     
-     
-     
-     #[derive(candid::CandidType, Clone, Serialize, Deserialize, Debug)]
-     struct Token {
-         token_id: u64,
-         property_id: u64,
-         owner_public_key: Vec<u8>,  // The public key of the token holder (property owner)
-         token_metadata: String,     // Token metadata, could include property description or other data
-     }
-     
-     // Implement Storable and BoundedStorable for Token
-     impl Storable for Token {
-         fn to_bytes(&self) -> Cow<[u8]> {
-             Cow::Owned(Encode!(self).unwrap())
-         }
-     
-         fn from_bytes(bytes: Cow<[u8]>) -> Self {
-             Decode!(bytes.as_ref(), Self).unwrap()
-         }
-     }
-     
-     impl BoundedStorable for Token {
-         const MAX_SIZE: u32 = 512;
-         const IS_FIXED_SIZE: bool = false;
-     }
-     
-     // Token ID counter
-     thread_local! {
-         static TOKEN_ID: RefCell<IdCell> = RefCell::new(
-             IdCell::init(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(2))), 0)
-                 .expect("Cannot create a token id counter")
-         );
-     
-         static TOKEN_STORAGE: RefCell<StableBTreeMap<u64, Token, Memory>> = RefCell::new(
-             StableBTreeMap::init(MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(3))))
-         );
-     }
-     
-     // Function to mint a token for a property
-     #[ic_cdk::update]
-     fn mint_token(property_id: u64) -> Result<Token, Error> {
-         // Fetch the property by ID
-         let property = get_property_by_id(property_id)?;
-     
-         // Increment token ID counter
-         let token_id = TOKEN_ID.with(|counter| {
-             let current_value = *counter.borrow().get();
-             counter.borrow_mut().set(current_value + 1)
-         }).expect("Cannot increment token id counter");
-     
-         // Create the token metadata (can be expanded)
-         let token_metadata = format!(
-             "Property at {}, built in {}, size: {} sqft, price: ${}",
-             property.address, property.year_build, property.lot_size, property.price
-         );
-     
-         // Create the new token
-         let token = Token {
-             token_id,
-             property_id: property.id,
-             owner_public_key: property.owner_public_key.clone(),
-             token_metadata,
-         };
-     
-         // Store the token in the token storage
-         TOKEN_STORAGE.with(|m| m.borrow_mut().insert(token_id, token.clone()));
-     
-         Ok(token)
-     }
-     
-     // Function to buy a token (assign ownership to a new public key)
-     #[ic_cdk::update]
-fn buy_token(token_id: u64, buyer_public_key: Vec<u8>) -> Result<Token, Error> {
-    // Fetch the token by ID
-    let mut token = get_token_by_id(token_id)?;
-
-    // Check if the token is already owned by someone else
-    if !token.owner_public_key.is_empty() && token.owner_public_key != buyer_public_key {
-        return Err(Error::Unauthorized {
-            msg: format!("Token with ID = {} is already owned", token_id),
-        });
-    }
-
-    // Update the token's owner to the buyer's public key
-    token.owner_public_key = buyer_public_key;
-
-
-    // Update token in storage
-    TOKEN_STORAGE.with(|m| m.borrow_mut().insert(token_id, token.clone()));
-
-    Ok(token)
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+pub struct Property {
+    id: u64,
+    owner: Principal,
+    price: f64,
+    location: String,
+    description: String,
+    status: PropertyStatus,
+    nft_id: Option<String>,
+    documents: Vec<Document>,
 }
 
-#[ic_cdk::update]
-fn distribute_dividends(property_id: u64, total_profit: f64) -> Result<(), Error> {
-    let property_tokens = TOKEN_STORAGE.with(|m| {
-        m.borrow()
-            .iter()
-            .filter(|(_, token)| token.property_id == property_id)
-            .map(|(_, token)| token.clone())
-            .collect::<Vec<_>>()
-    });
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+pub struct Document {
+    id: u64,
+    doc_type: DocumentType,
+    hash: String,
+    timestamp: u64,
+}
 
-    if property_tokens.is_empty() {
-        return Err(Error::NotFound {
-            msg: format!("No tokens found for property ID = {}", property_id),
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+pub enum DocumentType {
+    Deed,
+    Title,
+    Contract,
+    Inspection,
+    Other,
+}
+
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+pub enum PropertyStatus {
+    Available,
+    UnderContract,
+    Sold,
+}
+
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+pub struct Transaction {
+    id: u64,
+    property_id: u64,
+    seller: Principal,
+    buyer: Principal,
+    price: f64,
+    status: TransactionStatus,
+    timestamp: u64,
+}
+
+#[derive(CandidType, Deserialize, Serialize, Clone, Debug)]
+pub enum TransactionStatus {
+    Pending,
+    Completed,
+    Cancelled,
+}
+
+thread_local! {
+    static PROPERTIES: RefCell<HashMap<u64, Property>> = RefCell::new(HashMap::new());
+    static TRANSACTIONS: RefCell<HashMap<u64, Transaction>> = RefCell::new(HashMap::new());
+    static PROPERTY_COUNTER: RefCell<u64> = RefCell::new(0);
+    static TRANSACTION_COUNTER: RefCell<u64> = RefCell::new(0);
+}
+
+#[update]
+fn list_property(price: f64, location: String, description: String) -> Property {
+    let caller = ic_caller();
+    
+    PROPERTY_COUNTER.with(|counter| {
+        let mut count = counter.borrow_mut();
+        *count += 1;
+        let property_id = *count;
+        
+        let property = Property {
+            id: property_id,
+            owner: caller,
+            price,
+            location,
+            description,
+            status: PropertyStatus::Available,
+            nft_id: None,
+            documents: Vec::new(),
+        };
+
+        PROPERTIES.with(|properties| {
+            properties.borrow_mut().insert(property_id, property.clone());
         });
-    }
 
-    let dividend_per_token = total_profit * 0.85 / property_tokens.len() as f64; // 85% of the profit distributed
+        property
+    })
+}
 
-    // Simulate dividend distribution
-    for token in property_tokens {
-        // Normally, you'd integrate a payment system here
-        ic_cdk::println!(
-            "Distributing ${} to token ID {} for property {}",
-            dividend_per_token,
-            token.token_id,
-            property_id
+#[query]
+fn get_property(property_id: u64) -> Option<Property> {
+    PROPERTIES.with(|properties| {
+        properties.borrow().get(&property_id).cloned()
+    })
+}
+
+#[update]
+fn initiate_transaction(property_id: u64) -> u64 {
+    let buyer = ic_caller();
+    
+    PROPERTIES.with(|properties| {
+        let properties_ref = properties.borrow();
+        let property = properties_ref.get(&property_id).expect("Property not found");
+            
+        assert!(
+            matches!(property.status, PropertyStatus::Available),
+            "Property is not available"
         );
-    }
 
-    Ok(())
+        TRANSACTION_COUNTER.with(|counter| {
+            let mut count = counter.borrow_mut();
+            *count += 1;
+            let transaction_id = *count;
+
+            let transaction = Transaction {
+                id: transaction_id,
+                property_id,
+                seller: property.owner,
+                buyer,
+                price: property.price,
+                status: TransactionStatus::Pending,
+                timestamp: ic_cdk::api::time(),
+            };
+
+            TRANSACTIONS.with(|transactions| {
+                transactions.borrow_mut().insert(transaction_id, transaction);
+            });
+
+            // Update property status
+            let mut updated_property = property.clone();
+            updated_property.status = PropertyStatus::UnderContract;
+            properties.borrow_mut().insert(property_id, updated_property);
+
+            transaction_id
+        })
+    })
 }
 
-#[ic_cdk::query]
-fn get_tokens_by_owner(owner_public_key: Vec<u8>) -> Result<Vec<Token>, Error> {
-    let owned_tokens = TOKEN_STORAGE.with(|m| {
-        m.borrow()
-            .iter()
-            .filter(|(_, token)| token.owner_public_key == owner_public_key)
-            .map(|(_, token)| token.clone())
-            .collect::<Vec<_>>()
-    });
+#[update]
+fn complete_transaction(transaction_id: u64) -> bool {
+    let caller = ic_caller();
+    
+    TRANSACTIONS.with(|transactions| {
+        let transactions_ref = transactions.borrow();
+        let transaction = transactions_ref.get(&transaction_id).expect("Transaction not found");
 
-    if owned_tokens.is_empty() {
-        return Err(Error::NotFound {
-            msg: format!("No tokens found for owner"),
-        });
-    }
+        assert!(
+            transaction.seller == caller,
+            "Only seller can complete transaction"
+        );
 
-    Ok(owned_tokens)
+        assert!(
+            matches!(transaction.status, TransactionStatus::Pending),
+            "Transaction is not pending"
+        );
+
+        PROPERTIES.with(|properties| {
+            let mut property = properties
+                .borrow()
+                .get(&transaction.property_id)
+                .expect("Property not found")
+                .clone();
+
+            property.status = PropertyStatus::Sold;
+            property.owner = transaction.buyer;
+            properties.borrow_mut().insert(transaction.property_id, property);
+
+            let mut updated_transaction = transaction.clone();
+            updated_transaction.status = TransactionStatus::Completed;
+            transactions.borrow_mut().insert(transaction_id, updated_transaction);
+
+            true
+        })
+    })
 }
 
+#[update]
+fn add_document(property_id: u64, doc_type: DocumentType, hash: String) -> bool {
+    let caller = ic_caller();
+    
+    PROPERTIES.with(|properties| {
+        let mut property = properties
+            .borrow()
+            .get(&property_id)
+            .expect("Property not found")
+            .clone();
 
-// Function to sell a token (remove ownership from the current owner)
-#[ic_cdk::update]
-fn sell_token(token_id: u64, seller_public_key: Vec<u8>) -> Result<Token, Error> {
-    // Fetch the token by ID
-    let mut token = get_token_by_id(token_id)?;
+        assert!(
+            property.owner == caller,
+            "Only property owner can add documents"
+        );
 
-    // Ensure that the seller owns the token
-    if token.owner_public_key != seller_public_key {
-        return Err(Error::Unauthorized {
-            msg: format!("Token with ID = {} is not owned by the seller", token_id),
-        });
-    }
+        let document = Document {
+            id: property.documents.len() as u64,
+            doc_type,
+            hash,
+            timestamp: ic_cdk::api::time(),
+        };
 
-    // Remove ownership (set public key to empty)
-    token.owner_public_key = Vec::new();
+        property.documents.push(document);
+        properties.borrow_mut().insert(property_id, property);
 
-    // Update the token in the storage
-    TOKEN_STORAGE.with(|m| m.borrow_mut().insert(token_id, token.clone()));
-
-    Ok(token)
+        true
+    })
 }
-     // Function to retrieve token by token ID
-     #[ic_cdk::query]
-     fn get_token_by_id(token_id: u64) -> Result<Token, Error> {
-         TOKEN_STORAGE.with(|storage| {
-             storage.borrow().get(&token_id).ok_or(Error::NotFound {
-                 msg: format!("Token with ID = {} not found", token_id),
-             })
-         })
-     }
-     
-     // Function to transfer token ownership
-     #[ic_cdk::update]
-     fn transfer_token_ownership(token_id: u64, new_owner_public_key: Vec<u8>) -> Result<Token, Error> {
-         TOKEN_STORAGE.with(|m| {
-             let mut token = m.borrow_mut().get(&token_id).ok_or(Error::NotFound {
-                 msg: format!("Token with ID = {} not found", token_id),
-             })?;
-     
-             token.owner_public_key = new_owner_public_key.clone();
-     
-             m.borrow_mut().insert(token_id, token.clone());
-     
-             Ok(token)
-         })
-     }
-     
-     //Provides candid interface.
-     ic_cdk::export_candid!();
+
+#[query]
+fn get_all_properties() -> Vec<Property> {
+    PROPERTIES.with(|properties| {
+        properties.borrow().values().cloned().collect()
+    })
+}
+
+#[query]
+fn get_user_properties(user: Principal) -> Vec<Property> {
+    PROPERTIES.with(|properties| {
+        properties
+            .borrow()
+            .values()
+            .filter(|p| p.owner == user)
+            .cloned()
+            .collect()
+    })
+}
+
+#[query]
+fn get_transaction(transaction_id: u64) -> Option<Transaction> {
+    TRANSACTIONS.with(|transactions| {
+        transactions.borrow().get(&transaction_id).cloned()
+    })
+}
+
+#[ic_cdk::init]
+fn init() {
+    PROPERTY_COUNTER.with(|counter| *counter.borrow_mut() = 0);
+    TRANSACTION_COUNTER.with(|counter| *counter.borrow_mut() = 0);
+}
