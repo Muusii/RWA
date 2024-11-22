@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import Logo from "../assets/REIT1.jpg";
+import Logo from "../assets/REIT1.png";
 import { motion } from 'framer-motion';
 
 interface NavbarProps {
@@ -20,7 +20,7 @@ const Navbar: React.FC<NavbarProps> = ({ onLogin, loggedIn, onLogout }) => {
     <nav className="bg-gray-800 text-white p-4">
       <div className="container mx-auto flex justify-between items-center relative">
         <div className="flex items-center">
-          <img src={Logo} alt="REIT Logo" className="h-10" />
+          <img src={Logo} alt="REIT Logo" className="h-20 w-auto" />
         </div>
         <div className="md:hidden">
           <button onClick={toggleMenu} className="text-white focus:outline-none">

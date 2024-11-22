@@ -1,8 +1,8 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {  faTwitter } from "@fortawesome/free-brands-svg-icons";
+import { faTwitter } from "@fortawesome/free-brands-svg-icons";
 import { Link } from "react-router-dom";
-import Logo from '../assets/REIT1.jpg';
+import Logo from '../assets/REIT1.png';
 
 const Footer: React.FC = () => {
   return (
@@ -31,8 +31,8 @@ const Footer: React.FC = () => {
             <li><a href="https://chain.link/use-cases/asset-tokenization" className="hover:text-poultry-pink transition-colors">Ask Expert</a></li>
           </ul>
         </div>
-        <div>
-         <img src={Logo} alt="poultry Logo" className="h-10" />
+        <div className="flex justify-center items-center">
+          <img src={Logo} alt="poultry Logo" className="h-20 w-auto" />
         </div>
       </div>
       <p className="mt-8 text-black-500 text-sm">
@@ -46,3 +46,4 @@ const Footer: React.FC = () => {
 };
 
 export default Footer;
+
