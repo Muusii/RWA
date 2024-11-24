@@ -9,7 +9,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navabar';
 import HomePage from './pages/Homepage';
 import FeaturePage from './pages/Feature';
-import AboutPage from './pages/About';
+// import AboutPage from './pages/About';
 import LoginPage from './pages/Login';
 import Footer from './components/Footer';
 import DashboardPage from './pages/Dashboard';
@@ -95,7 +95,7 @@ function App() {
       
        <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
+        {/* <Route path="/about" element={<AboutPage />} /> */}
         <Route path="/features" element={<FeaturePage />} />
         <Route path='/login'elemen={<LoginPage />} />
         <Route path='/dashboard' element={<DashboardPage/>} />

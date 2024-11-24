@@ -11,11 +11,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        'poultry-main': '#C36237',
-        'poultry-orange': '#C36237',
+        'poultry-main': '#32302D',
+        'poultry-orange': '#FFA500s',
         'poultry-dark': '#4B0082',
-        'poultry-pink': '#E75480',
+        'poultry-pink': '#32302D',
         'white': '#F5F5F5',
+        'gold': '#FFD700',
       },
     },
   },
